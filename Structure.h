@@ -10,37 +10,37 @@ struct Particle {
   int id;
   double x, y;   // posición
   double vx, vy; // velocidad
-  double radius; // radio angulo de giro
+  double radius; // radio de la particula (sirve para la deteccion de coliciones)
 };
 
 struct Rectangle {
-  double x, y;
-  double w, h;
+  double x, y; // centro del rectangulo
+  double w, h; // medidas
 
-  bool contains(const Particle &p) const;
+  bool contains(const Particle &p) const;// verifica si hay una particula en el nodo
   bool intersects(const Rectangle &other) const;
 };
 
 struct QueryStats {
-  long long nodesVisited;
-  long long particlesChecked;
-  long long candidatesFound;
+  long long nodesVisited; // cuantos nodos tuvo que visitar hasta encontrar las particulas
+  long long particlesChecked; //cantidad de porticulas en total encontradas en el camino
+  long long candidatesFound; // cantidad de particulas encontradas en el area movil
 };
 
 struct CollisionStats {
-  int collisions;
-  long long comparisons;
-  long long nodesVisited;
-  long long particlesChecked;
-  long long candidatesFound;
+  int collisions; // cantidad ade coliciones encontradas
+  long long comparisons; // cantidad de compraraciones entre particulas para determinar si tienen coliciones
+  long long nodesVisited; // cantidad de nodos visitados en la consulta
+  long long particlesChecked; // canridad de particulas revisadas dentro de los nodos
+  long long candidatesFound; // posibles particulas a colicionar
 };
 
 class QuadNode {
 public:
-  Rectangle boundary;
-  vector<Particle> particles;
-  bool divided;
-
+  Rectangle boundary; //region del espacio que controla
+  vector<Particle> particles; //particulas entro del espacio del nodo
+  bool divided; // si el nodo ya se dividio o no
+  //hijos del nodo
   QuadNode *northeast;
   QuadNode *northwest;
   QuadNode *southeast;
@@ -52,43 +52,42 @@ public:
   bool insert(const Particle &p, int capacity);
   void subdivide(int capacity);
   void queryRange(const Rectangle &range, vector<Particle> &found,
-                  QueryStats &stats) const;
-  void collectBoundaries(vector<Rectangle> &boundaries) const;
+                  QueryStats &stats) const; //consultar datos dentro del area
+  void collectBoundaries(vector<Rectangle> &boundaries) const; //obtener los rectangulos para poder dibujarlos en el front
   void clear();
-  void serialize(std::ostringstream &os) const;
+  void serialize(std::ostringstream &os) const; //convertir informacion del nodo en texto y enviarlo al front
 };
 
 class QuadTree {
 private:
   QuadNode *root;
   int capacity;
-  Rectangle boundary;
+  Rectangle boundary; //area mayor del arbol
 
 public:
   QuadTree(Rectangle boundary, int capacity);
   ~QuadTree();
 
-  bool insert(const Particle &p);
-  void queryRange(const Rectangle &range, vector<Particle> &found) const;
-  void queryRange(const Rectangle &range, vector<Particle> &found,
-                  QueryStats &stats) const;
-  vector<Particle> queryNearPoint(double x, double y, double radius) const;
-  vector<Particle> queryNearPoint(double x, double y, double radius,
-                                  QueryStats &stats) const;
+  bool insert(const Particle &p);// inserta una particula en el nodo raiz
+  void queryRange(const Rectangle &range, vector<Particle> &found) const;//consulta dentro del area sin metricas
+  void queryRange(const Rectangle &range, vector<Particle> &found, QueryStats &stats) const;//consulta dentro del area con metricas
+
+  vector<Particle> queryNearPoint(double x, double y, double radius) const;//consulta dentro del area cercanas a un punto sin metricas
+  vector<Particle> queryNearPoint(double x, double y, double radius, QueryStats &stats) const;//consulta dentro del area cercanas a un punto con metricas
+
   void collectBoundaries(vector<Rectangle> &boundaries) const;
   void clear();
-  void serialize(std::ostringstream &os) const;
+  void serialize(std::ostringstream &os) const; //convertir los datos a texto
 };
+// funciones universales
+void updateParticles(vector<Particle> &particles, double width, double height); //actualiza la posicion de todas las particulas
 
-void updateParticles(vector<Particle> &particles, double width, double height);
+double distanceBetween(const Particle &a, const Particle &b); // distancia entre particulas
+bool areColliding(const Particle &a, const Particle &b); //verifica si dos particulas estan colicionando
 
-double distanceBetween(const Particle &a, const Particle &b);
-bool areColliding(const Particle &a, const Particle &b);
-
-int bruteForceCollisions(const vector<Particle> &particles);
-int quadTreeCollisions(QuadTree &qt, const vector<Particle> &particles);
-CollisionStats bruteForceCollisionStats(const vector<Particle> &particles);
-CollisionStats quadTreeCollisionStats(QuadTree &qt,
-                                      const vector<Particle> &particles);
+int bruteForceCollisions(const vector<Particle> &particles); // version de fuerza bruta para calcular la cantidad de coliciones que hay
+int quadTreeCollisions(QuadTree &qt, const vector<Particle> &particles); // version de Quaddtree para calcular las coliciones
+CollisionStats bruteForceCollisionStats(const vector<Particle> &particles); //BF coliciones+stats
+CollisionStats quadTreeCollisionStats(QuadTree &qt,const vector<Particle> &particles);//QT coliciones+stats
 
 #endif
