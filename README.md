@@ -6,6 +6,8 @@ El proyecto corresponde a la **opción A (QuadTree)** del Proyecto 2 del curso d
 
 Utiliza una arquitectura híbrida donde el backend en **C++** calcula la física y la estructura del árbol espacial usando Server-Sent Events (SSE) para enviar la simulación en tiempo real a una interfaz visual construida en **Vue.js + Tailwind CSS**.
 
+**Repositorio:** [YiT-73/proyecto2-quad-tree](https://github.com/YiT-73/proyecto2-quad-tree)
+
 ---
 
 ## Características Principales
